@@ -13,7 +13,8 @@ Imports:
     data.table,
     fingerprint,
     igraph,
-    obabel2R,
     rcdk,
+    tictoc
+Suggests:
     testthat
 RoxygenNote: 6.1.0

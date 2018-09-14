@@ -4,13 +4,15 @@
 \alias{get_fingerprint_dimensions}
 \title{Determine the fingerprint dimension}
 \usage{
-get_fingerprint_dimensions(fps, check_all = FALSE)
+get_fingerprint_dimensions(fps, check_all = FALSE, silent = FALSE)
 }
 \arguments{
 \item{fps}{list of \code{\link[fingerprint]{fingerprint}} object}
 
-\item{check_all}{boolean,  if \code{FALSE} only the first not null fingerprint
+\item{check_all}{logical, if \code{FALSE} only the first not null fingerprint
 is used to determine the fingerprint dimension.}
+
+\item{silent}{logical, if \code{TRUE} warnings are supressed.}
 }
 \value{
 integer, dimension of the fingerprints or list of integers, if several

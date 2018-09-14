@@ -4,15 +4,15 @@
 \alias{calculate_fingerprints_from_smiles}
 \title{Calculate molecular fingerprints from smiles}
 \usage{
-calculate_fingerprints_from_smiles(smiles, fps_type = "maccs",
-  fps_mode = "bit", verbose = FALSE, ...)
+calculate_fingerprints_from_smiles(smiles, fp_type = "maccs",
+  fp_mode = "bit", verbose = FALSE, ...)
 }
 \arguments{
 \item{smiles}{list of strings (1 x n_samples)}
 
-\item{fps_type}{string, fingerprint definition}
+\item{fp_type}{string, fingerprint definition}
 
-\item{fps_mode}{string, which fingerprint type should be returned:
+\item{fp_mode}{string, which fingerprint type should be returned:
 \itemize{
   \item "bit": binary fingerprint-vector
   \item "raw": (key, value)-pairs
@@ -28,12 +28,12 @@ calculate_fingerprints_from_smiles(smiles, fps_type = "maccs",
 \item{...}{parameters passed to the fingerprint calculation function}
 }
 \value{
-list of \code{\link{fingerprint-class}} objects for the provided
-    SMILES. \code{is.null(list[i])} is \code{true}, if the fingerprint for
+list of \code{\link[fingerprint]{fingerprint-class}} objects for the provided
+    SMILES. \code{is.null(list[i])} is \code{TRUE}, if the fingerprint for
     the corresponding SMILES could not be computed.
 }
 \description{
 This function takes a set of smiles and calculates for those the different
 sets of fingerprints. For a list of valid fingerprint definitions see
-\code{\link{get.fingerpint}}.
+\code{\link[rcdk]{get.fingerpint}}.
 }

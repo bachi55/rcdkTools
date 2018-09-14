@@ -28,8 +28,8 @@ calculate_fingerprints_from_inchi(inchi, fp_type = "maccs",
 \item{...}{parameters passed to the fingerprint calculation function}
 }
 \value{
-list of \code{\link{fingerprint-class}} objects for the provided
-    InChIs. \code{is.null(list[i])} is \code{true}, if the fingerprint for
+list of \code{\link[fingerprint]{fingerprint-class}} objects for the provided
+    InChIs. \code{is.null(list[i])} is \code{TRUE}, if the fingerprint for
     the corresponding InChI could not be computed.
 
 put an example for counting maccs fingerprints here.
@@ -37,5 +37,5 @@ put an example for counting maccs fingerprints here.
 \description{
 This function takes a set of inchis and calculates for those the desired
 set of fingerprints. For a list of valid fingerprint definitions see
-\code{\link{get.fingerpint}}.
+\code{\link[rcdk]{get.fingerpint}}.
 }

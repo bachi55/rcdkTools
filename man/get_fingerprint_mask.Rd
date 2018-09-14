@@ -9,7 +9,8 @@ get_fingerprint_mask(fps, remove_single_value = TRUE,
   low_variance_tshd = 0.9)
 }
 \arguments{
-\item{fps}{binary matrix, shape (n_samples x n_fingerprints)}
+\item{fps}{binary matrix, shape (n_samples x n_fingerprints), e.g. the output
+of \code{fingerprints_to_matrix}.}
 
 \item{remove_single_value}{binary, exclude fps with always the same value}
 
@@ -29,7 +30,8 @@ binary vector (1 x n_fingerpints):
 }
 \description{
 Given a binary fingerprint matrix a mask is calculated to exclude
-fingerprints: \itemize{
+fingerprints:
+\itemize{
   \item with the same value across the dataset
   \item with low variance, e.g. fp_i = 1 in 90\% of the data
   \item which are redunant, e.g. fp_i = 1 <=> fp_j = 1

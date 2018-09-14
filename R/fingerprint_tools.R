@@ -2,7 +2,7 @@
 #'
 #' This function takes a set of inchis and calculates for those the desired
 #' set of fingerprints. For a list of valid fingerprint definitions see
-#' \code{\link{get.fingerpint}}.
+#' \code{\link[rcdk]{get.fingerpint}}.
 #'
 #' @param inchi list of strings (1 x n_samples)
 #' @param fp_type string, fingerprint definition
@@ -18,8 +18,8 @@
 #' }
 #' @param verbose boolean, should the function be verbose
 #' @param ... parameters passed to the fingerprint calculation function
-#' @return list of \code{\link{fingerprint-class}} objects for the provided
-#'     InChIs. \code{is.null(list[i])} is \code{true}, if the fingerprint for
+#' @return list of \code{\link[fingerprint]{fingerprint-class}} objects for the provided
+#'     InChIs. \code{is.null(list[i])} is \code{TRUE}, if the fingerprint for
 #'     the corresponding InChI could not be computed.
 #'
 #' put an example for counting maccs fingerprints here.
@@ -28,8 +28,8 @@
 calculate_fingerprints_from_inchi <- function(
     inchi, fp_type = "maccs", fp_mode = "bit", verbose = FALSE, ...)
 {
-    smiles <- inchi2smile(inchi)
-    fps <- calculate_fingerprints_from_smiles(smiles, fp_mode, verbose, ...)
+    smiles <- inchi2smiles(inchi)
+    fps <- calculate_fingerprints_from_smiles(smiles, fp_type, fp_mode, verbose, ...)
 
     stopifnot(names(fps) == smiles)
     names(fps) <- inchi
@@ -41,11 +41,11 @@ calculate_fingerprints_from_inchi <- function(
 #'
 #' This function takes a set of smiles and calculates for those the different
 #' sets of fingerprints. For a list of valid fingerprint definitions see
-#' \code{\link{get.fingerpint}}.
+#' \code{\link[rcdk]{get.fingerpint}}.
 #'
 #' @param smiles list of strings (1 x n_samples)
-#' @param fps_type string, fingerprint definition
-#' @param fps_mode string, which fingerprint type should be returned:
+#' @param fp_type string, fingerprint definition
+#' @param fp_mode string, which fingerprint type should be returned:
 #' \itemize{
 #'   \item "bit": binary fingerprint-vector
 #'   \item "raw": (key, value)-pairs
@@ -57,18 +57,18 @@ calculate_fingerprints_from_inchi <- function(
 #' }
 #' @param verbose boolean, should the function be verbose
 #' @param ... parameters passed to the fingerprint calculation function
-#' @return list of \code{\link{fingerprint-class}} objects for the provided
-#'     SMILES. \code{is.null(list[i])} is \code{true}, if the fingerprint for
+#' @return list of \code{\link[fingerprint]{fingerprint-class}} objects for the provided
+#'     SMILES. \code{is.null(list[i])} is \code{TRUE}, if the fingerprint for
 #'     the corresponding SMILES could not be computed.
 #'
 #' @export
 calculate_fingerprints_from_smiles <- function(
-    smiles, fps_type = "maccs", fps_mode = "bit", verbose = FALSE, ...)
+    smiles, fp_type = "maccs", fp_mode = "bit", verbose = FALSE, ...)
 {
     # Parse all smiles and perform configuration
     tictoc::tic("Parsing and configuration")
 
-    smiles.parsed <- parse.smiles (smiles)
+    smiles.parsed <- rcdk::parse.smiles (smiles)
     n_mol <- length(smiles)
 
     # Do not show the progress bar when n_mol <= 1
@@ -85,11 +85,11 @@ calculate_fingerprints_from_smiles <- function(
             next
         }
 
-        do.typing      (smiles.parsed[[idx]])
-        do.aromaticity (smiles.parsed[[idx]])
-        do.isotopes    (smiles.parsed[[idx]])
-        convert.implicit.to.explicit (smiles.parsed[[idx]])
-        do.isotopes    (smiles.parsed[[idx]])
+        rcdk::do.typing      (smiles.parsed[[idx]])
+        rcdk::do.aromaticity (smiles.parsed[[idx]])
+        rcdk::do.isotopes    (smiles.parsed[[idx]])
+        rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
+        rcdk::do.isotopes    (smiles.parsed[[idx]])
 
         if (verbose) {
             setTxtProgressBar(pb, idx)
@@ -104,22 +104,22 @@ calculate_fingerprints_from_smiles <- function(
 
     # Calculate all the desired fingerprints
     if (verbose) {
-        tictoc::tic(sprintf("\nCalculate the '%s' fingerprints", fps_type))
+        tictoc::tic(sprintf("\nCalculate the '%s' fingerprints", fp_type))
         pb <- txtProgressBar(0, n_mol - 1, style = 3)
     }
 
     fps <- lapply(smiles.parsed,
-        function(x, fps_definition) {
-            if (is.null (x)) {
+        function(x) {
+            if (is.null(x)) {
                 # SMILES could not be parsed
                 NULL
             } else {
                 if (verbose){
                     setTxtProgressBar(pb, which(sapply (smiles.parsed, '==', x)))
                 }
-                get.fingerprint(x, type = fps_type, fp.mode = fps_mode, ...)
+                rcdk::get.fingerprint(x, type = fp_type, fp.mode = fp_mode, ...)
             }
-        }, fps_definition)
+        })
 
     if (verbose) {
         tictoc::toc(log = TRUE, quiet = ! verbose)
@@ -145,7 +145,7 @@ fingerprints_to_matrix <- function (fps)
     # get InChIs or SMILES associated with each fingerprint.
     rownames(fps_matrix) <- names(fps)
 
-    return (fps)
+    return (fps_matrix)
 }
 
 fp.to.matrix2 <- function (fps) {
@@ -165,7 +165,7 @@ fp.to.matrix2 <- function (fps) {
     }
 
     # Determine the fingerprint dimension
-    fp_dims <- get_fingerprint_dimensions(fps, check_all = TRUE)
+    fp_dims <- get_fingerprint_dimensions(fps, check_all = TRUE, silent = TRUE)
     if (length(fp_dims) > 1) {
         stop("Fingerprint vectors do have different dimension. Cannot create a
              single matrix")
@@ -184,7 +184,7 @@ fp.to.matrix2 <- function (fps) {
         if (is_binary_fp) {
             m[fp_i, fp@bits] <- 1
         } else {
-            m[fp_i, ] <- sapply(attributes (fp)$feature, get_value_from_feature)
+            m[fp_i, ] <- sapply(attributes(fp)$feature, get_value_from_feature)
         }
     }
     # cnt <- 1
@@ -216,14 +216,15 @@ fp.to.matrix2 <- function (fps) {
 #' is determined.
 #'
 #' @param fps list of \code{\link[fingerprint]{fingerprint}} object
-#' @param check_all boolean,  if \code{FALSE} only the first not null fingerprint
+#' @param check_all logical, if \code{FALSE} only the first not null fingerprint
 #'   is used to determine the fingerprint dimension.
+#' @param silent logical, if \code{TRUE} warnings are supressed.
 #'
 #' @return integer, dimension of the fingerprints or list of integers, if several
 #'   different dimensions where found.
 #'
 #' @export
-get_fingerprint_dimensions <- function (fps, check_all = FALSE) {
+get_fingerprint_dimensions <- function (fps, check_all = FALSE, silent = FALSE) {
     fp_dims <- numeric()
     for (fp in fps) {
         if (! is.null(fp)) {
@@ -247,13 +248,14 @@ get_fingerprint_dimensions <- function (fps, check_all = FALSE) {
     }
 
     # If all fingerprints are NULL, we cannot determine the dimension.
-    if (! length(fps_dims)) {
-        stop("All fingerprints are 'NULL'. No dimension can be determined.")
+    if (! silent && length(fp_dims) == 0) {
+        warning("All fingerprints are 'NULL'. No dimension can be determined.")
+        fp_dims <- 0
     }
 
     fp_dims <- unique(fp_dims)
 
-    if (length(fp_dims) > 1) {
+    if (! silent && length(fp_dims) > 1) {
         warning("Fingerprints do have different dimensions.")
     }
 
@@ -263,14 +265,16 @@ get_fingerprint_dimensions <- function (fps, check_all = FALSE) {
 #' Calculate mask to exclude molecular fingerpints given a set of criterias
 #'
 #' Given a binary fingerprint matrix a mask is calculated to exclude
-#' fingerprints: \itemize{
+#' fingerprints:
+#' \itemize{
 #'   \item with the same value across the dataset
 #'   \item with low variance, e.g. fp_i = 1 in 90\% of the data
 #'   \item which are redunant, e.g. fp_i = 1 <=> fp_j = 1
 #' }
 #' where fp_i is the i'th fingerprint definition.
 #'
-#' @param fps binary matrix, shape (n_samples x n_fingerprints)
+#' @param fps binary matrix, shape (n_samples x n_fingerprints), e.g. the output
+#'   of \code{fingerprints_to_matrix}.
 #' @param remove_single_value binary, exclude fps with always the same value
 #' @param remove_redundant binary, exclude redundant fps
 #' @param remove_low_variance binary, exlcude fps with low variance
@@ -291,12 +295,13 @@ get_fingerprint_mask <- function (
     remove_low_variance = TRUE,
     low_variance_tshd   = 0.90)
 {
-    stopifnot(all(fps == 1 || fps == 0))
+    stopifnot(all(unique(as.vector(fps)) %in% c(TRUE, FALSE, 1, 0)))
 
-    n_samples <- nrow (fps)
-    n_fps <- ncol (fps)
+    n_samples <- nrow(fps)
+    n_fps <- ncol(fps)
 
-    # Find the columns in which all the fingerprints are either -1 or 1
+    # Find the columns in which all the fingerprints are either 0 (FALSE) or 1
+    # (TRUE).
     if (remove_single_value) {
         is_single_value <- apply(fps, MARGIN = 2,
                                  FUN = function(x) all(x == 1) || all(x == 0))
@@ -304,6 +309,7 @@ get_fingerprint_mask <- function (
         is_single_value <- rep(FALSE, n_fps)
     }
 
+    # Find columns with low variance of the fingerprints.
     if (remove_low_variance) {
         is_low_variance <- apply(fps, MARGIN = 2, FUN = function(x) {
             any(c(sum(x == 1), sum(x == 0)) / n_fps >= low_variance_tshd)
@@ -313,8 +319,8 @@ get_fingerprint_mask <- function (
     }
 
     # Find all the redundant fingerprints:
-    #   fp_i = -1 <--> fp_j = -1
-    #   fp_i =  1 <--> fp_j =  1
+    #   fp_i = 0 <=> fp_j = 0
+    #   fp_i = 1 <=> fp_j = 1
     if (remove_redundant) {
         fps[fps == 0] <- -1
 
@@ -322,17 +328,17 @@ get_fingerprint_mask <- function (
 
         # Build up an undirected graph with edges between all redundant
         # components
-        fps_graph <- graph_from_adjacency_matrix(fps_cor == 1, mode = "undirected")
+        fps_graph <- igraph::graph_from_adjacency_matrix(fps_cor == 1,
+                                                         mode = "undirected")
         # Find the connected components in this graph. For each component only
         # one fingerprint definition needs to be kept. We keep the one with the
         # lowest fingerprint index.
-        fps_comp <- components (fps_graph)
+        fps_comp <- igraph::components(fps_graph)
         n_comp <- fps_comp$no
-        cols_not_redundant <- sapply (
-            1:n_comp,
-            FUN = function (idx, fps_comp) { which (fps_comp$membership == idx)[1] },
-            fps_comp
-        )
+        cols_not_redundant <- sapply(1:n_comp, FUN = function (idx, fps_comp) {
+                which (fps_comp$membership == idx)[1]
+            }, fps_comp)
+
         is_redundant <- rep (TRUE, n_fps)
         is_redundant[cols_not_redundant] <- FALSE
     } else {
