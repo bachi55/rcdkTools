@@ -1,0 +1,19 @@
+Package: rcdkTools
+Type: Package
+Title: rcdkTools
+Version: 0.1.0
+Author: person("Eric", "Bach", email = "eric.bach@aalto.fi", 
+    role = c("aut", "cre"))
+Maintainer: Eric Bach <eric.bach@aalto.fi>
+Description: Set of tools and helper functions usefull when using the rcdk package.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    data.table,
+    fingerprint,
+    igraph,
+    obabel2R,
+    rcdk,
+    testthat
+RoxygenNote: 6.1.0
