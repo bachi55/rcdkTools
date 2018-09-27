@@ -15,8 +15,8 @@ larger sets of molecules. It is mainly indeted to be a wrapper around the
 
 Currently not support by the original package:
 - **substructure** fingerprint provided by [CDK](https://github.com/cdk/cdk)
-  - In this way the MACCS counting fingerprints can be used.
-  - For that the corresponding SMARTS pattern must be [downloaded]( cdk/descriptor/fingerprint/src/main/resources/org/openscience/cdk/fingerprint/data/SMARTS_countable_MACCS_keys.txt).
+  - In this way the MACCS counting fingerprints can be used. 
+  - For that the corresponding SMARTS pattern must be [downloaded](https://github.com/cdk/cdk/blob/4004eb64fd7e94a0da674ae2c0eedba79fda425f/descriptor/fingerprint/src/main/resources/org/openscience/cdk/fingerprint/data/SMARTS_countable_MACCS_keys.txt).
 - additional **circular** fingerprint type as supported by CDK
   - The original ```rcdk``` only supports *ECFP6*
   - My extension provides access to the [all types provided by CDK](https://github.com/cdk/cdk/blob/4004eb64fd7e94a0da674ae2c0eedba79fda425f/descriptor/fingerprint/src/main/java/org/openscience/cdk/fingerprint/CircularFingerprinter.java#L99)
