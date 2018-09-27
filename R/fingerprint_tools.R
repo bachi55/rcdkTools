@@ -161,7 +161,7 @@ write_fingerprint_to_json_file <- function (fps, path, exclude_zero_fp = FALSE,
         lapply(counts, function (x) x)
     })
 
-    return (jsonlite::write_json(fps_out, path, ...))
+    jsonlite::write_json(fps_out, path, ...)
 }
 
 #' Construct a fingerprint matrix
