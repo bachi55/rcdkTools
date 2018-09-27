@@ -14,7 +14,8 @@ Imports:
     fingerprint,
     igraph,
     rcdk,
-    tictoc
+    tictoc,
+    jsonlite
 Suggests:
     testthat
 RoxygenNote: 6.1.0

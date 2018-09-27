@@ -73,7 +73,7 @@ test_that("non parseable smiles are handled", {
     expect_equal(length(fps), length(smiles))
     expect_equal(names(fps), smiles)
 
-    expect_true(! is.null(fps[[1]]))
+    expect_false(is.null(fps[[1]]))
     expect_true(is.null(fps[[2]]))
     expect_true(is.null(fps[[3]]))
 })
@@ -102,13 +102,13 @@ test_that("fingerprints are calculated", {
     names(fps_from_smiles) <- NULL
     expect_equal(fps, fps_from_smiles)
 
-    expect_true(! is.null(fps[[1]]))
+    expect_false(is.null(fps[[1]]))
     expect_true(is.null(fps[[2]]))
-    expect_true(! is.null(fps[[3]]))
+    expect_false(is.null(fps[[3]]))
     expect_true(is.null(fps[[4]]))
-    expect_true(! is.null(fps[[5]]))
-    expect_true(! is.null(fps[[6]]))
-    expect_true(! is.null(fps[[7]]))
+    expect_false(is.null(fps[[5]]))
+    expect_false(is.null(fps[[6]]))
+    expect_false(is.null(fps[[7]]))
 })
 
 test_that("parameters are passed to fingerprint calculation", {
@@ -315,3 +315,81 @@ test_that ("low_variance_removal_is_correct", {
     expect_equal(mask, c(T, T, T, T))
 })
 
+context ("Fingerprints to JSON file")
+test_that ("Fingerprints are put correctly converted to the JSON file", {
+    fps <- list("MOL1" = new("featvec", features = lapply(1:6, function(i) {
+            new("feature", feature = LETTERS[i], count=i)
+         })),
+         "MOL2" = new("featvec", features = lapply(7:12, function(i) {
+             if(i %% 2 == 0){
+                 c <- i
+             } else {
+                 c <- 0
+             }
+             new("feature", feature = LETTERS[i], count=as.integer(c))
+         })))
+
+    # $MOL1
+    # Feature fingerprint
+    # name =
+    #     source =
+    #     features =  A:1 B:2 C:3 D:4 E:5 F:6
+    #
+    # $MOL2
+    # Feature fingerprint
+    # name =
+    #     source =
+    #     features =  G:0 H:8 I:0 J:10 K:0 L:12
+
+    tmp_file <- tempfile()
+    write_fingerprint_to_json_file(fps, tmp_file)
+    fps_json_string <- readLines(tmp_file)
+    expect_equal(fps_json_string, '{"MOL1":{"A":[1],"B":[2],"C":[3],"D":[4],"E":[5],"F":[6]},"MOL2":{"G":[0],"H":[8],"I":[0],"J":[10],"K":[0],"L":[12]}}')
+
+    tmp_file <- tempfile()
+    write_fingerprint_to_json_file(fps, tmp_file, exclude_zero_fp = TRUE)
+    fps_json_string <- readLines(tmp_file)
+    expect_equal(fps_json_string, '{"MOL1":{"A":[1],"B":[2],"C":[3],"D":[4],"E":[5],"F":[6]},"MOL2":{"H":[8],"J":[10],"L":[12]}}')
+})
+
+test_that ("Parameters are passed down to toJSON", {
+    fps <- list("MOL1" = new("featvec", features = lapply(1:6, function(i) {
+        new("feature", feature = LETTERS[i], count=i)
+    })),
+    "MOL2" = new("featvec", features = lapply(7:12, function(i) {
+        if(i %% 2 == 0){
+            c <- i
+        } else {
+            c <- 0
+        }
+        new("feature", feature = LETTERS[i], count=as.integer(c))
+    })))
+
+    tmp_file <- tempfile()
+    write_fingerprint_to_json_file(fps, tmp_file, exclude_zero_fp = TRUE, auto_unbox = TRUE)
+    fps_json_string <- readLines(tmp_file)
+    expect_equal(fps_json_string, '{"MOL1":{"A":1,"B":2,"C":3,"D":4,"E":5,"F":6},"MOL2":{"H":8,"J":10,"L":12}}')
+
+    tmp_file <- tempfile()
+    write_fingerprint_to_json_file(fps, tmp_file, auto_unbox = TRUE, pretty = TRUE)
+    fps_json_string <- readLines(tmp_file)
+    expect_equal(paste0(fps_json_string, collapse = "\n"),
+'{
+  "MOL1": {
+    "A": 1,
+    "B": 2,
+    "C": 3,
+    "D": 4,
+    "E": 5,
+    "F": 6
+  },
+  "MOL2": {
+    "G": 0,
+    "H": 8,
+    "I": 0,
+    "J": 10,
+    "K": 0,
+    "L": 12
+  }
+}')
+})

@@ -129,6 +129,41 @@ calculate_fingerprints_from_smiles <- function(
     return (fps)
 }
 
+#' Convert fingerprint list into a JSON string and write it to a file.
+#'
+#' List of \code{\link[fingerprint]{fingerprint}} objects is converted to a JSON
+#' string. Subsequently this string is stored in a file using
+#' \code{\link[jsonlite]{write_json}}.
+#'
+#' @param fps list of \code{\link[fingerprint]{fingerprint}} objects
+#'   (1 x n_samples)
+#' @param path string, path to the output file
+#' @param exclude_zero_fp logical, indicating whether fingerprints that have
+#'   value equal 0 should be excluded from the JSON string.
+#' @param ... parameters passed to down to \code{\link[jsonlite]{toJSON}}.
+#'
+#' @export
+write_fingerprint_to_json_file <- function (fps, path, exclude_zero_fp = FALSE,
+                                            ...)
+{
+    fps_out <- lapply(fps, function(fp_i) {
+        if (class(fp_i) != "featvec") {
+            stop("Currently only counting fps can be converted to JSON.")
+        }
+
+        counts <- sapply(fp_i@features, fingerprint::count)
+        names(counts) <- sapply(fp_i@features, fingerprint::feature)
+
+        if (exclude_zero_fp) {
+            counts <- counts[counts > 0]
+        }
+
+        lapply(counts, function (x) x)
+    })
+
+    return (jsonlite::write_json(fps_out, path, ...))
+}
+
 #' Construct a fingerprint matrix
 #'
 #' List of \code{\link[fingerprint]{fingerprint}} objects to matrix.
@@ -150,7 +185,7 @@ fingerprints_to_matrix <- function (fps)
 
 fp.to.matrix2 <- function (fps) {
     # get_value_from_feature <- function (feature) { attributes(feature)$count }
-    get_key_from_feature <- function (feature) { attributes(feature)$feature }
+    # get_key_from_feature <- function (feature) { attributes(feature)$feature }
 
     # Determine fingerprint class
     is_binary_fp <- NULL
@@ -175,7 +210,7 @@ fp.to.matrix2 <- function (fps) {
     for (fp_i in seq(1, length(fps))) {
         fp <- fps[[fp_i]]
 
-        # for NULL fps we inser NA for each fp-dimension fp_i
+        # for NULL fps we insert NA for each fp-dimension fp_i
         if (is.null(fp)) {
             m[fp_i, ] <- NA
             next
@@ -184,7 +219,7 @@ fp.to.matrix2 <- function (fps) {
         if (is_binary_fp) {
             m[fp_i, fp@bits] <- 1
         } else {
-            m[fp_i, ] <- sapply(attributes(fp)$feature, get_value_from_feature)
+            m[fp_i, ] <- sapply(fp@feature, fingerprint::count)
         }
     }
     # cnt <- 1
