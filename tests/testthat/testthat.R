@@ -352,6 +352,43 @@ test_that ("Fingerprints are put correctly converted to the JSON file", {
     expect_equal(fps_json_string, '{"MOL1":{"A":[1],"B":[2],"C":[3],"D":[4],"E":[5],"F":[6]},"MOL2":{"H":[8],"J":[10],"L":[12]}}')
 })
 
+test_that ("Binary fingerprints are correctly converted to the JSON file", {
+    fps <- list(
+        "MOL1" = new("fingerprint", nbit=8, bits=c(1,2,3,6,8)),
+        "MOL2" = new("fingerprint", nbit=8, bits=c(1,7)))
+
+    # $MOL1
+    # Fingerprint object
+    # name =
+    #     length =  8
+    # folded =  FALSE
+    # source =
+    #     bits on =  1 2 3 6 8
+    #
+    # $MOL2
+    # Fingerprint object
+    # name =
+    #     length =  8
+    # folded =  FALSE
+    # source =
+    #     bits on =  1 7
+
+    tmp_file <- tempfile()
+    write_fingerprint_to_json_file(fps, tmp_file)
+    fps_json_string <- readLines(tmp_file)
+    expect_equal(fps_json_string, '{"MOL1":{"1":[1],"2":[1],"3":[1],"4":[0],"5":[0],"6":[1],"7":[0],"8":[1]},"MOL2":{"1":[1],"2":[0],"3":[0],"4":[0],"5":[0],"6":[0],"7":[1],"8":[0]}}')
+
+    tmp_file <- tempfile()
+    write_fingerprint_to_json_file(fps, tmp_file, exclude_zero_fp = TRUE)
+    fps_json_string <- readLines(tmp_file)
+    expect_equal(fps_json_string, '{"MOL1":{"1":[1],"2":[1],"3":[1],"6":[1],"8":[1]},"MOL2":{"1":[1],"7":[1]}}')
+})
+
+test_that ("Unsupported fingerprint representation throws exception", {
+    fps <- list("MOL1" = c(0,1,1,0,0), "MOL2" = c(0,1,1,1,1))
+    expect_error(write_fingerprint_to_json_file(fps))
+})
+
 test_that ("Parameters are passed down to toJSON", {
     fps <- list("MOL1" = new("featvec", features = lapply(1:6, function(i) {
         new("feature", feature = LETTERS[i], count=i)
@@ -392,4 +429,80 @@ test_that ("Parameters are passed down to toJSON", {
     "L": 12
   }
 }')
+})
+
+context ("Fingerprints to matrix")
+test_that ("Counting fps are converted correctly", {
+    fps <- list(
+        "MOL0" = NULL,
+        "MOL1" = new("featvec", features = lapply(1:6, function(i) {
+            new("feature", feature = LETTERS[i], count=i)
+        })),
+        "MOL2" = new("featvec", features = lapply(7:12, function(i) {
+            if(i %% 2 == 0){
+                c <- i
+            } else {
+                c <- 0
+            }
+            new("feature", feature = LETTERS[i], count=as.integer(c))
+        })))
+
+    fps_mat <- fingerprints_to_matrix(fps)
+
+    expect_equal(nrow(fps_mat), 3)
+    expect_equal(ncol(fps_mat), 6)
+    expect_equal(names(fps), rownames(fps_mat))
+
+    expect_true(all(is.na(fps_mat[1,])))
+    expect_equal(fps_mat[2,], 1:6)
+    expect_equal(fps_mat[3,], c(0,8,0,10,0,12))
+})
+
+test_that ("Binary fps are converted correctly", {
+    fps <- list(
+        "MOL1" = new("fingerprint", nbit=8, bits=c(1,2,3,6,8)),
+        "MOL2" = NULL,
+        "MOLX" = NULL,
+        "MOL3" = new("fingerprint", nbit=8, bits=c(1,7)))
+
+    fps_mat <- fingerprints_to_matrix(fps)
+
+    expect_equal(nrow(fps_mat), 4)
+    expect_equal(ncol(fps_mat), 8)
+    expect_equal(names(fps), rownames(fps_mat))
+
+    expect_true(all(is.na(fps_mat[2,])))
+    expect_true(all(is.na(fps_mat[3,])))
+    expect_equal(fps_mat[1,], c(1,1,1,0,0,1,0,1))
+    expect_equal(fps_mat[4,], c(1,0,0,0,0,0,1,0))
+})
+
+test_that ("Invalid input is handled correctly", {
+    # all fingerprints are zero
+    fps <- list("MOL1" = NULL, "MOL2" = NULL)
+    expect_error(fingerprints_to_matrix(fps))
+
+    # fingerprints have different dimension
+    fps <- list(
+        "MOL1" = new("fingerprint", nbit=8, bits=c(1,2,3,6,8)),
+        "MOL2" = new("fingerprint", nbit=7, bits=c(1,7)))
+    expect_error(fingerprints_to_matrix(fps))
+})
+
+context ("Write fingerprints to csv-file")
+test_that ("Fps are correctly stored", {
+    fps <- list(
+        "MOL1" = new("fingerprint", nbit=8, bits=c(1,2,3,6,8)),
+        "MOL2" = NULL,
+        "MOLX" = NULL,
+        "MOL3" = new("fingerprint", nbit=8, bits=c(1,7)))
+
+    tmpfile = tempfile()
+    write_fingerprint_to_csv_file(fps, tmpfile)
+
+    fps_csv <- read.table(tmpfile, stringsAsFactors = FALSE, sep = ",", header = FALSE)
+
+    expect_equal(nrow(fps_csv), length(fps))
+    expect_equal(ncol(fps_csv), 1 + 8)
+    expect_equal(fps_csv[,1], names(fps))
 })

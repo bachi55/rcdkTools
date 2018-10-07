@@ -147,21 +147,45 @@ write_fingerprint_to_json_file <- function (fps, path, exclude_zero_fp = FALSE,
                                             ...)
 {
     fps_out <- lapply(fps, function(fp_i) {
-        if (class(fp_i) != "featvec") {
-            stop("Currently only counting fps can be converted to JSON.")
+        if (class(fp_i) == "featvec")
+        {
+            features <- sapply(fp_i@features, fingerprint::count)
+            names(features) <- sapply(fp_i@features, fingerprint::feature)
         }
-
-        counts <- sapply(fp_i@features, fingerprint::count)
-        names(counts) <- sapply(fp_i@features, fingerprint::feature)
+        else if (class(fp_i) == "fingerprint")
+        {
+            features <- rep(0, fp_i@nbit)
+            features[fp_i@bits] <- 1
+            names(features) <- 1:fp_i@nbit
+        }
+        else stop("Unsupported fingerprint class: ", class(fp_i))
 
         if (exclude_zero_fp) {
-            counts <- counts[counts > 0]
+            features <- features[features > 0]
         }
 
-        lapply(counts, function (x) x)
+        lapply(features, function (x) x)
     })
 
     jsonlite::write_json(fps_out, path, ...)
+}
+
+
+#' Convert fingerprint list into a matrix and write it to a csv-file.
+#'
+#' List of \code{\link[fingerprint]{fingerprint}} objects is converted to a
+#' matrix using \code{\link{fingerprint_to_matrix}} and subsequently
+#' written into a csv-file.
+#'
+#' @param fps list of \code{\link[fingerprint]{fingerprint}} objects
+#'   (1 x n_samples)
+#' @param path string, path to the output file
+#'
+#' @export
+write_fingerprint_to_csv_file <- function (fps, path) {
+    fps_matrix <- fingerprints_to_matrix(fps)
+    write.table(fps_matrix, path, col.names = FALSE, row.names = TRUE,
+                quote = TRUE, sep = ",")
 }
 
 #' Construct a fingerprint matrix
@@ -219,7 +243,7 @@ fp.to.matrix2 <- function (fps) {
         if (is_binary_fp) {
             m[fp_i, fp@bits] <- 1
         } else {
-            m[fp_i, ] <- sapply(fp@feature, fingerprint::count)
+            m[fp_i, ] <- sapply(fp@features, fingerprint::count)
         }
     }
     # cnt <- 1
