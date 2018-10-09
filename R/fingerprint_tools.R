@@ -85,11 +85,35 @@ calculate_fingerprints_from_smiles <- function(
             next
         }
 
-        rcdk::do.typing      (smiles.parsed[[idx]])
-        rcdk::do.aromaticity (smiles.parsed[[idx]])
-        rcdk::do.isotopes    (smiles.parsed[[idx]])
-        rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
-        rcdk::do.isotopes    (smiles.parsed[[idx]])
+        # Do typing for all the molecules
+        rcdk::do.typing(smiles.parsed[[idx]])
+
+        if (fp_type == "maccs") {
+            # covers also "maccs counting" fingerprints.
+            rcdk::do.aromaticity (smiles.parsed[[idx]])
+            rcdk::do.isotopes    (smiles.parsed[[idx]]) # ??
+        } else if (fp_type == "pubchem") {
+            rcdk::do.aromaticity (smiles.parsed[[idx]])
+            rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
+        } else if (fp_type %in% c("circular", "kr", "circular", "signature", "lingo")) {
+            # no further configuration needed
+        } else if (fp_type == "substructure") {
+            # Unfortunately, we need do not know here, whether the user has
+            # provided here some substructures that would require some kind of
+            # modifications.
+        } else if (fp_type == "estate") {
+            rcdk::do.aromaticity (smiles.parsed[[idx]])
+            # rJava::.jcall(smiles.parsed[[idx]], "V", "addImplicitHydrogens", smiles.parsed[[idx]])
+        } else if (fp_type %in% c("standard", "extended", "graph", "hybridization")) {
+            # All based on the 'Fingerprinter' class
+            rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
+            # aromaticity detection is done in the fingerprint class (CDK)
+        } else if (fp_type == "shortestpath") {
+            rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
+            # aromaticity detection is done in the fingerprint class (CDK)
+        } else {
+            stop("Unsupported fingerprint type: ", fp_type)
+        }
 
         if (verbose) {
             setTxtProgressBar(pb, idx)
@@ -117,7 +141,17 @@ calculate_fingerprints_from_smiles <- function(
                 if (verbose){
                     setTxtProgressBar(pb, which(sapply (smiles.parsed, '==', x)))
                 }
-                rcdk::get.fingerprint(x, type = fp_type, fp.mode = fp_mode, ...)
+
+                if ((fp_type == "maccs") & (fp_mode == "count")) {
+                    # This is a bit hacky, as it ignores the parameters passed by
+                    # using '...'. However, at this point, the 'substructure' fps
+                    # do anyway not accept any other parameters.
+                    rcdk::get.fingerprint(x, type = "substructure", fp.mode = fp_mode,
+                                          substructure.pattern = count_maccs_pattern)
+                } else {
+                    rcdk::get.fingerprint(x, type = fp_type, fp.mode = fp_mode, ...)
+                }
+
             }
         })
 
@@ -246,25 +280,7 @@ fp.to.matrix2 <- function (fps) {
             m[fp_i, ] <- sapply(fp@features, fingerprint::count)
         }
     }
-    # cnt <- 1
-    # for (fp in fplist) {
-    #     if (is.null (fp)) {
-    #         m[cnt, ] <- NA
-    #     } else {
-    #         if (is_binary) {
-    #             m[cnt, fp@bits] <- 1
-    #         } else {
-    #             # Sort the keys to ensure same order of fingerprint definitions
-    #             # for all molecules.
-    #             srtres <- sort (sapply (attributes (fp)$feature,
-    #                                     get_key_from_feature),
-    #                             index.return = TRUE)
-    #             values <- sapply (attributes (fp)$feature, get_value_from_feature)
-    #             m[cnt, ] <- values[srtres$ix]
-    #         }
-    #     }
-    #     cnt <- cnt + 1
-    # }
+
     return (m)
 }
 

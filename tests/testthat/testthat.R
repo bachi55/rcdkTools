@@ -506,3 +506,15 @@ test_that ("Fps are correctly stored", {
     expect_equal(ncol(fps_csv), 1 + 8)
     expect_equal(fps_csv[,1], names(fps))
 })
+
+context ("Package data")
+test_that ("MACCS_SMARTS_PATTERN_are_accessable", {
+    expect_equal(length(count_maccs_pattern), 142)
+})
+
+context ("Molecule configuration specific for fingerprint type")
+test_that ("MACCS_counting_fps_are_calculated", {
+    fp = calculate_fingerprints_from_smiles("c1ccccc1", fp_type="maccs", fp_mode="count")
+    expect_equal(length(fp[[1]]@features), length(count_maccs_pattern))
+    expect_equal(fingerprint::count(fp[[1]]@features[[112]]), 1)
+})
