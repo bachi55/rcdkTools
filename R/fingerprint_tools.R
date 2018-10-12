@@ -217,7 +217,11 @@ write_fingerprint_to_json_file <- function (fps, path, exclude_zero_fp = FALSE,
 #'
 #' @export
 write_fingerprint_to_csv_file <- function (fps, path) {
-    fps_matrix <- fingerprints_to_matrix(fps)
+    if (class(fps) != "matrix") {
+        fps_matrix <- fingerprints_to_matrix(fps)
+    } else {
+        fps_matrix <- fps
+    }
     write.table(fps_matrix, path, col.names = FALSE, row.names = TRUE,
                 quote = TRUE, sep = ",")
 }
@@ -424,10 +428,31 @@ get_fingerprint_mask <- function (
 }
 
 
-#' Produce a binary mask to exclude molecular fingerprints
-get_count_fingerprint_mask <- function (count_fps)
+#' Calculate mask to exclude molecular counting fingerpints
+#'
+#' @param fps scalar matrix, shape (n_samples x n_fingerprints), e.g. the output
+#'   of \code{fingerprints_to_matrix}.
+#' @param remove_single_value binary, exclude fps with always the same value
+#'
+#' @return binary vector (1 x n_fingerpints):
+#' \itemize{
+#'   \item \code{TRUE}: keep fingerprint
+#'   \item \code{FALSE}: exclude fingerprint
+#' }
+#'
+#' @export
+get_count_fingerprint_mask <- function (
+    count_fps,
+    remove_single_value = TRUE)
 {
-    is_all_ZERO <- apply (count_fps, MARGIN = 2, FUN = function (x) all (x == 0))
+    n_fps <- ncol(count_fps)
 
-    return (! is_all_ZERO)
+    if (remove_single_value) {
+        is_single_value <- apply (count_fps, MARGIN = 2,
+                                  FUN = function (x) length(unique(x)) == 1)
+    } else {
+        is_single_value <- rep(FALSE, n_fps)
+    }
+
+    return (! is_single_value)
 }

@@ -2,10 +2,23 @@
 % Please edit documentation in R/fingerprint_tools.R
 \name{get_count_fingerprint_mask}
 \alias{get_count_fingerprint_mask}
-\title{Produce a binary mask to exclude molecular fingerprints}
+\title{Calculate mask to exclude molecular counting fingerpints}
 \usage{
-get_count_fingerprint_mask(count_fps)
+get_count_fingerprint_mask(count_fps, remove_single_value = TRUE)
+}
+\arguments{
+\item{remove_single_value}{binary, exclude fps with always the same value}
+
+\item{fps}{scalar matrix, shape (n_samples x n_fingerprints), e.g. the output
+of \code{fingerprints_to_matrix}.}
+}
+\value{
+binary vector (1 x n_fingerpints):
+\itemize{
+  \item \code{TRUE}: keep fingerprint
+  \item \code{FALSE}: exclude fingerprint
+}
 }
 \description{
-Produce a binary mask to exclude molecular fingerprints
+Calculate mask to exclude molecular counting fingerpints
 }

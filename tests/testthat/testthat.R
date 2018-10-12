@@ -169,6 +169,21 @@ test_that("some obscure cases are caught correctly", {
     expect_error(fingerprints_to_matrix(fps))
 })
 
+context("Counting fingerprint mask")
+test_that("is_correct", {
+    fps <- matrix (c(
+        1, 6, 3, 0,
+        2, 0, 3, 1,
+        0, 0, 3, 1
+    ), nrow = 3, byrow = TRUE)
+
+    mask <- get_count_fingerprint_mask (fps, remove_single_value = FALSE)
+    expect_equal(mask, c(T, T, T, T))
+
+    mask <- get_count_fingerprint_mask (fps, remove_single_value = TRUE)
+    expect_equal(mask, c(T, T, F, T))
+})
+
 context("Binary fingerprint mask")
 test_that("is_correct", {
     fps <- matrix (c(
