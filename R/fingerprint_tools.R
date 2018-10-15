@@ -433,6 +433,11 @@ get_fingerprint_mask <- function (
 #' @param fps scalar matrix, shape (n_samples x n_fingerprints), e.g. the output
 #'   of \code{fingerprints_to_matrix}.
 #' @param remove_single_value binary, exclude fps with always the same value
+#' @param remove_low_abundant binary, exclude fps with low abundance, i.e. they
+#'   appear only in a few molecule examples.
+#' @param low_abundance_thsd scalar, threshold for being a low abundant fp.
+#'   (default = 0.25, fp must be present in at least 25\% of the examples to be
+#'   not removed.)
 #'
 #' @return binary vector (1 x n_fingerpints):
 #' \itemize{
@@ -443,7 +448,9 @@ get_fingerprint_mask <- function (
 #' @export
 get_count_fingerprint_mask <- function (
     count_fps,
-    remove_single_value = TRUE)
+    remove_single_value = TRUE,
+    remove_low_abundant = TRUE,
+    low_abundance_thsd = 0.25)
 {
     n_fps <- ncol(count_fps)
 
@@ -454,5 +461,14 @@ get_count_fingerprint_mask <- function (
         is_single_value <- rep(FALSE, n_fps)
     }
 
-    return (! is_single_value)
+    # Find columns with low variance of the fingerprints.
+    if (remove_low_abundant) {
+        is_low_abundant <- apply(count_fps, MARGIN = 2, FUN = function(x) {
+            (sum(x != 0) / n_fps) < low_abundance_thsd
+        })
+    } else {
+        is_low_abundant <- rep(FALSE, n_fps)
+    }
+
+    return (! (is_single_value | is_low_abundant))
 }

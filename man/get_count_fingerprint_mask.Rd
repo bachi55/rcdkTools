@@ -4,10 +4,18 @@
 \alias{get_count_fingerprint_mask}
 \title{Calculate mask to exclude molecular counting fingerpints}
 \usage{
-get_count_fingerprint_mask(count_fps, remove_single_value = TRUE)
+get_count_fingerprint_mask(count_fps, remove_single_value = TRUE,
+  remove_low_abundant = TRUE, low_abundance_thsd = 0.25)
 }
 \arguments{
 \item{remove_single_value}{binary, exclude fps with always the same value}
+
+\item{remove_low_abundant}{binary, exclude fps with low abundance, i.e. they
+appear only in a few molecule examples.}
+
+\item{low_abundance_thsd}{scalar, threshold for being a low abundant fp.
+(default = 0.25, fp must be present in at least 25\% of the examples to be
+not removed.)}
 
 \item{fps}{scalar matrix, shape (n_samples x n_fingerprints), e.g. the output
 of \code{fingerprints_to_matrix}.}

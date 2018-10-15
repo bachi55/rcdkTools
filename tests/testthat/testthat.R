@@ -177,12 +177,46 @@ test_that("is_correct", {
         0, 0, 3, 1
     ), nrow = 3, byrow = TRUE)
 
-    mask <- get_count_fingerprint_mask (fps, remove_single_value = FALSE)
+    mask <- get_count_fingerprint_mask (fps, remove_single_value = FALSE,
+                                        remove_low_abundant = FALSE)
     expect_equal(mask, c(T, T, T, T))
 
-    mask <- get_count_fingerprint_mask (fps, remove_single_value = TRUE)
+    mask <- get_count_fingerprint_mask (fps, remove_single_value = TRUE,
+                                        remove_low_abundant = FALSE)
     expect_equal(mask, c(T, T, F, T))
 })
+
+test_that("low_abundance_detection_is_correct", {
+    fps <- matrix (c(
+        1, 6, 3, 0,
+        2, 0, 3, 0,
+        0, 0, 3, 0,
+        0, 0, 3, 1
+    ), nrow = 4, byrow = TRUE)
+
+    mask <- get_count_fingerprint_mask (fps, remove_low_abundant = FALSE,
+                                        remove_single_value = FALSE)
+    expect_equal(mask, c(T, T, T, T))
+
+    mask <- get_count_fingerprint_mask (fps, remove_low_abundant = TRUE,
+                                        remove_single_value = FALSE,
+                                        low_abundance_thsd = 0.30)
+    expect_equal(mask, c(T, F, T, F))
+
+    mask <- get_count_fingerprint_mask (fps, remove_low_abundant = TRUE,
+                                        remove_single_value = FALSE,
+                                        low_abundance_thsd = 0.51)
+    expect_equal(mask, c(F, F, T, F))
+
+    mask <- get_count_fingerprint_mask (fps, remove_low_abundant = TRUE,
+                                        remove_single_value = FALSE)
+    expect_equal(mask, c(T, T, T, T))
+
+    mask <- get_count_fingerprint_mask (fps, remove_low_abundant = TRUE,
+                                        remove_single_value = TRUE)
+    expect_equal(mask, c(T, T, F, T))
+})
+
 
 context("Binary fingerprint mask")
 test_that("is_correct", {
