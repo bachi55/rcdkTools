@@ -286,6 +286,8 @@ setdiff_fingerprints <- function (fps_A, fps_B) {
         return (fp_set_diff)
     })
 
+    names(fps_setdiff) <- names(fps_A)
+
     return (fps_setdiff)
 }
 
@@ -334,6 +336,7 @@ hashed_fp.to.matrix <- function(fps, sort_hash_keys) {
     fps_hash_union <- c()
     for (fp_i in 1:n_fps) {
         if (is.null(fps[[fp_i]])) { next }
+        if (length(fps[[fp_i]]@features) == 0) { next }
 
         fps_hash_union <- union(fps_hash_union,
                                 sapply(fps[[fp_i]]@features, fingerprint::feature))
@@ -354,6 +357,8 @@ hashed_fp.to.matrix <- function(fps, sort_hash_keys) {
             m[fp_i, ] <- NA
             next
         }
+
+        if (length(fps[[fp_i]]@features) == 0) { next }
 
         fp_hashes <- sapply(fps[[fp_i]]@features, fingerprint::feature)
         m[fp_i, fp_hashes] <- sapply(fps[[fp_i]]@features, fingerprint::count)

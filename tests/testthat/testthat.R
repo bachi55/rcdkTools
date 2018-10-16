@@ -378,6 +378,7 @@ test_that ("Difference fingerprints are correct", {
 
     expect_equal(length(fps_4), length(fps_diff))
     expect_equal(length(fps_6), length(fps_diff))
+    expect_equal(names(fps_diff), names(fps_4))
 
     # Look at the individual fingerprint vectors
     fp_diff_1 <- fps_diff[[1]]
@@ -397,6 +398,29 @@ test_that ("Difference fingerprints are correct", {
 })
 
 context ("Create fingerprint matrix for hashed fps")
+test_that ("Empty feature sets are handled", {
+    make_mol_feat <- function(i) {
+        new("feature", feature = LETTERS[i], count=as.integer(i))
+    }
+
+    fps <- list(
+        "MOL1" = new("featvec", features = lapply(1:6, make_mol_feat)),
+        "MOL2" = new("featvec", features = lapply(c(8,3,5), make_mol_feat)))
+
+    fps[[1]]@features <- fps[[1]]@features[c()]
+
+    fps_matrix <- fingerprints_to_matrix(fps, is_hashed = TRUE,
+                                         sort_hash_keys = TRUE,
+                                         add_colnames = TRUE)
+
+    expect_equal(nrow(fps_matrix), length(fps))
+    expect_equal(ncol(fps_matrix), 3)
+    expect_true(all(fps_matrix[1,] == 0))
+    expect_equal(fps_matrix[2,1], 3)
+    expect_equal(fps_matrix[2,2], 5)
+    expect_equal(fps_matrix[2,3], 8)
+})
+
 test_that ("Fingerprint matrix is correct", {
     make_mol_feat <- function(i) {
         new("feature", feature = LETTERS[i], count=as.integer(i))
