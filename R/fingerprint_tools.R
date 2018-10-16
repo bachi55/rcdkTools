@@ -257,6 +257,7 @@ write_fingerprint_mask_to_csv_file <- function(mask, path) {
 #' @return fingerprint matrix (n_samples x n_fingerprints)
 #'
 #' @export
+
 fingerprints_to_matrix <- function (fps, is_hashed = FALSE, sort_hash_keys = FALSE,
                                     add_colnames = FALSE)
 {
