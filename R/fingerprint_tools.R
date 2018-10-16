@@ -251,7 +251,7 @@ write_fingerprint_mask_to_csv_file <- function(mask, path) {
 #' @param sort_hash_keys boolean, indicating whether the hash keys should be
 #'   sorted (using \code{\link[base]{sort}}), i.e. the columns of the
 #'   fingerprints matrix will be sorted.
-#' @param add_colnames, boolean, indicating whether the hash keys should be
+#' @param add_colnames boolean, indicating whether the hash keys should be
 #'   added as column-names to the output matrix.
 #'
 #' @return fingerprint matrix (n_samples x n_fingerprints)
