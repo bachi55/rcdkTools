@@ -239,6 +239,56 @@ write_fingerprint_mask_to_csv_file <- function(mask, path) {
                 quote = TRUE, sep = ",")
 }
 
+#' Calcualte the set-difference for two sets of fingerprints elementwise
+#'
+#' Function to calcualte the set-difference for two sets of hashed fingerprints
+#' for each example. This can be useful, if circular, i.e. ECFP or FCFP,
+#' fingerprints are considered. For example if we want to know, which features
+#' are unique to the ECFP6 fingerprints, we need to remove those ones of ECFP4.
+#'
+#' @param fps_A fps list of \code{\link[fingerprint]{fingerprint}} objects
+#'   (1 x n_samples)
+#' @param fps_B fps list of \code{\link[fingerprint]{fingerprint}} objects
+#'   (1 x n_samples)
+#'
+#' @return list of \code{\link[fingerprint]{fingerprint-class}}.
+#'
+#' @examples
+#' inchi <- "InChI=1S/C9H10O4/c10-7-3-1-6(2-4-7)5-8(11)9(12)13/h1-4,8,10-11H,5H2,(H,12,13)"
+#' fps_ecfp4 <- calculate_fingerprints_from_inchi(
+#'     inchi, fp_type = "circular", fp_mode = "count", circular.type="ECFP4")
+#' fps_ecfp6 <- calculate_fingerprints_from_inchi(
+#'     inchi, fp_type = "circular", fp_mode = "count", circular.type="ECFP6")
+#'
+#' fps_diff <- setdiff_fingerprints(fps_ecfp6, fps_ecfp4)
+#'
+#' @export
+setdiff_fingerprints <- function (fps_A, fps_B) {
+    stopifnot(length(fps_A) == length(fps_B))
+    stopifnot(names(fps_A) == names(fps_B))
+
+    fps_setdiff <- lapply(1:length(fps_A), function (fp_i) {
+        fp_A <- fps_A[[fp_i]]
+        fp_B <- fps_B[[fp_i]]
+
+        if (is.null(fp_A) | is.null(fp_B)) { return (NULL) }
+
+        feat_A <- sapply(fp_A@features, fingerprint::feature)
+        feat_B <- sapply(fp_B@features, fingerprint::feature)
+
+        if (! all(feat_B %in% feat_A)) {
+            stop("The featureset of B should be a subset of A.")
+        }
+
+        fp_set_diff <- fp_A
+        fp_set_diff@features <- fp_set_diff@features[! (feat_A %in% feat_B)]
+
+        return (fp_set_diff)
+    })
+
+    return (fps_setdiff)
+}
+
 #' Construct a fingerprint matrix
 #'
 #' List of \code{\link[fingerprint]{fingerprint}} objects to matrix.
@@ -257,7 +307,6 @@ write_fingerprint_mask_to_csv_file <- function(mask, path) {
 #' @return fingerprint matrix (n_samples x n_fingerprints)
 #'
 #' @export
-
 fingerprints_to_matrix <- function (fps, is_hashed = FALSE, sort_hash_keys = FALSE,
                                     add_colnames = FALSE)
 {

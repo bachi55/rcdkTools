@@ -19,7 +19,7 @@ matching of the dimensions is not possible.}
 sorted (using \code{\link[base]{sort}}), i.e. the columns of the
 fingerprints matrix will be sorted.}
 
-\item{add_colnames, }{boolean, indicating whether the hash keys should be
+\item{add_colnames}{boolean, indicating whether the hash keys should be
 added as column-names to the output matrix.}
 }
 \value{

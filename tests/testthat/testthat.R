@@ -364,6 +364,38 @@ test_that ("low_variance_removal_is_correct", {
     expect_equal(mask, c(T, T, T, T))
 })
 
+context ("Create set-difference fingerprints")
+test_that ("Difference fingerprints are correct", {
+    inchis <- c("InChI=1S/C9H10O4/c10-7-3-1-6(2-4-7)5-8(11)9(12)13/h1-4,8,10-11H,5H2,(H,12,13)",
+                "InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)")
+
+    fps_4 <- calculate_fingerprints_from_inchi(
+        inchis, fp_type = "circular", fp_mode = "count", circular.type="ECFP4")
+    fps_6 <- calculate_fingerprints_from_inchi(
+        inchis, fp_type = "circular", fp_mode = "count", circular.type="ECFP6")
+
+    fps_diff <- setdiff_fingerprints(fps_6, fps_4)
+
+    expect_equal(length(fps_4), length(fps_diff))
+    expect_equal(length(fps_6), length(fps_diff))
+
+    # Look at the individual fingerprint vectors
+    fp_diff_1 <- fps_diff[[1]]
+    fp_diff_2 <- fps_diff[[2]]
+
+    fp_diff_feat_1 <- sapply(fp_diff_1@features, fingerprint::feature)
+    fp_diff_feat_2 <- sapply(fp_diff_2@features, fingerprint::feature)
+
+    expect_equal(fp_diff_feat_1, c("-1244114267", "-1028866103", "295780559", "722031324", "1602095716", "1972652850"))
+    expect_equal(length(fp_diff_feat_2), 0)
+
+    fp_diff_count_1 <- sapply(fp_diff_1@features, fingerprint::count)
+    fp_diff_count_2 <- sapply(fp_diff_2@features, fingerprint::count)
+
+    expect_equal(fp_diff_count_1, c(1, 1, 1, 1, 1, 1))
+    expect_equal(length(fp_diff_count_2), 0)
+})
+
 context ("Create fingerprint matrix for hashed fps")
 test_that ("Fingerprint matrix is correct", {
     make_mol_feat <- function(i) {
