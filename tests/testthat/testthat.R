@@ -364,6 +364,49 @@ test_that ("low_variance_removal_is_correct", {
     expect_equal(mask, c(T, T, T, T))
 })
 
+context ("Create fingerprint matrix for hashed fps")
+test_that ("Fingerprint matrix is correct", {
+    make_mol_feat <- function(i) {
+        new("feature", feature = LETTERS[i], count=as.integer(i))
+    }
+
+    fps <- list(
+        "MOL1" = new("featvec", features = lapply(1:6, make_mol_feat)),
+        "MOL2" = new("featvec", features = lapply(c(8,3,5), make_mol_feat)),
+        "MOL3" = new("featvec", features = lapply(c(1,2,3,9,8), make_mol_feat)))
+
+    fps_matrix <- fingerprints_to_matrix(fps, is_hashed = TRUE,
+                                         sort_hash_keys = TRUE)
+
+    expect_equal(nrow(fps_matrix), length(fps))
+    expect_equal(ncol(fps_matrix), 8)
+    expect_equal(colnames(fps_matrix), LETTERS[c(1:6, 8, 9)])
+
+    fps_matrix_ref <- matrix(c(1, 2, 3, 4, 5, 6, 0, 0,
+                               0, 0, 3, 0, 5, 0, 8, 0,
+                               1, 2, 3, 0, 0, 0, 8, 9),
+                             nrow = length(fps), ncol = 8, byrow = TRUE)
+    rownames(fps_matrix_ref) <- names(fps)
+    colnames(fps_matrix_ref) <- LETTERS[c(1:6, 8, 9)]
+    expect_equal(fps_matrix, fps_matrix_ref)
+
+    # Do not sort the hash keys
+    fps_matrix <- fingerprints_to_matrix(fps[c(2,3,1)], is_hashed = TRUE,
+                                         sort_hash_keys = FALSE)
+
+    expect_equal(nrow(fps_matrix), length(fps))
+    expect_equal(ncol(fps_matrix), 8)
+    expect_equal(colnames(fps_matrix), LETTERS[c(8,3,5,1,2,9,4,6)])
+
+    fps_matrix_ref <- matrix(c(8, 3, 5, 0, 0, 0, 0, 0,
+                               8, 3, 0, 1, 2, 9, 0, 0,
+                               0, 3, 5, 1, 2, 0, 4, 6),
+                             nrow = length(fps), ncol = 8, byrow = TRUE)
+    rownames(fps_matrix_ref) <- names(fps[c(2,3,1)])
+    colnames(fps_matrix_ref) <- LETTERS[c(8,3,5,1,2,9,4,6)]
+    expect_equal(fps_matrix, fps_matrix_ref)
+})
+
 context ("Fingerprints to JSON file")
 test_that ("Fingerprints are put correctly converted to the JSON file", {
     fps <- list("MOL1" = new("featvec", features = lapply(1:6, function(i) {
@@ -554,6 +597,18 @@ test_that ("Fps are correctly stored", {
     expect_equal(nrow(fps_csv), length(fps))
     expect_equal(ncol(fps_csv), 1 + 8)
     expect_equal(fps_csv[,1], names(fps))
+})
+
+context ("Write fingerprint mask to file")
+test_that("Mask is correctly stored", {
+    mask <- matrix(c(T, T, F, F, T), nrow = 1)
+
+    tmpfile = tempfile()
+    write_fingerprint_mask_to_csv_file(mask, tmpfile)
+
+    mask_csv <- read.table(tmpfile, sep = ",", header = FALSE)
+
+    expect_true(all(as.matrix(mask_csv) == mask))
 })
 
 context ("Package data")

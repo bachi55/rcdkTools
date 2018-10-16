@@ -4,11 +4,19 @@
 \alias{fingerprints_to_matrix}
 \title{Construct a fingerprint matrix}
 \usage{
-fingerprints_to_matrix(fps)
+fingerprints_to_matrix(fps, is_hashed = FALSE, sort_hash_keys = FALSE)
 }
 \arguments{
 \item{fps}{list of \code{\link[fingerprint]{fingerprint}} objects
 (1 x n_samples)}
+
+\item{is_hashed}{boolean, indicating whether the provided fingerprints are
+hashed fingerprints, i.e. fps dimension might be different and direct
+matching of the dimensions is not possible.}
+
+\item{sort_hash_keys}{boolean, indicating whether the hash keys should be
+sorted (using \code{\link[base]{sort}}), i.e. the columns of the
+fingerprints matrix will be sorted.}
 }
 \value{
 fingerprint matrix (n_samples x n_fingerprints)
