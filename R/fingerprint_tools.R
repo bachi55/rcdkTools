@@ -226,23 +226,90 @@ write_fingerprint_to_csv_file <- function (fps, path) {
                 quote = TRUE, sep = ",")
 }
 
+#' Store fingerprint mask into csv-file
+#'
+#' @param mask binary vector (1 x n_fingerpints), fingerprint mask calcualted
+#'   with \code{\link{get_fingerprint_mask}} or
+#'   \code{\link{get_count_fingerprint_mask}}.
+#' @param path string, path to the output file
+#'
+#' @export
+write_fingerprint_mask_to_csv_file <- function(mask, path) {
+    write.table(matrix(mask, nrow = 1), path, col.names = FALSE, row.names = FALSE,
+                quote = TRUE, sep = ",")
+}
+
 #' Construct a fingerprint matrix
 #'
 #' List of \code{\link[fingerprint]{fingerprint}} objects to matrix.
 #'
 #' @param fps list of \code{\link[fingerprint]{fingerprint}} objects
 #'   (1 x n_samples)
+#' @param is_hashed boolean, indicating whether the provided fingerprints are
+#'   hashed fingerprints, i.e. fps dimension might be different and direct
+#'   matching of the dimensions is not possible.
+#' @param sort_hash_keys boolean, indicating whether the hash keys should be
+#'   sorted (using \code{\link[base]{sort}}), i.e. the columns of the
+#'   fingerprints matrix will be sorted.
+#' @param add_colnames, boolean, indicating whether the hash keys should be
+#'   added as column-names to the output matrix.
+#'
 #' @return fingerprint matrix (n_samples x n_fingerprints)
 #'
 #' @export
-fingerprints_to_matrix <- function (fps)
+fingerprints_to_matrix <- function (fps, is_hashed = FALSE, sort_hash_keys = FALSE,
+                                    add_colnames = FALSE)
 {
-    fps_matrix <- fp.to.matrix2(fps)
+    if (is_hashed) {
+        fps_matrix <- hashed_fp.to.matrix(fps, sort_hash_keys)
+    } else {
+        fps_matrix <- fp.to.matrix2(fps)
+    }
+
+    if (! add_colnames) {
+        colnames(fps_matrix) <- NULL
+    }
 
     # get InChIs or SMILES associated with each fingerprint.
     rownames(fps_matrix) <- names(fps)
 
     return (fps_matrix)
+}
+
+hashed_fp.to.matrix <- function(fps, sort_hash_keys) {
+    n_fps <- length(fps)
+
+    # Determine required dimension of the output fps, by building up the union
+    # of the different fingerprint hashes
+    fps_hash_union <- c()
+    for (fp_i in 1:n_fps) {
+        if (is.null(fps[[fp_i]])) { next }
+
+        fps_hash_union <- union(fps_hash_union,
+                                sapply(fps[[fp_i]]@features, fingerprint::feature))
+    }
+    fp_dims <- length(fps_hash_union)
+
+    # Sort hased fingerprints according to their hash value.
+    if (sort_hash_keys) {
+        fps_hash_union <- sort(fps_hash_union)
+    }
+
+    # Create fps matrix
+    m <- matrix (0, nrow = n_fps, ncol = fp_dims)
+    colnames(m) <- fps_hash_union
+
+    for (fp_i in 1:n_fps) {
+        if (is.null(fps[[fp_i]])) {
+            m[fp_i, ] <- NA
+            next
+        }
+
+        fp_hashes <- sapply(fps[[fp_i]]@features, fingerprint::feature)
+        m[fp_i, fp_hashes] <- sapply(fps[[fp_i]]@features, fingerprint::count)
+    }
+
+    return (m)
 }
 
 fp.to.matrix2 <- function (fps) {
@@ -426,6 +493,8 @@ get_fingerprint_mask <- function (
 
     return (! (is_single_value | is_low_variance | is_redundant))
 }
+
+
 
 
 #' Calculate mask to exclude molecular counting fingerpints
