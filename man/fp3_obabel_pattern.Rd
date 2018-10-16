@@ -74,9 +74,9 @@ visualize the SMARTS pattern you can use the following webservice [3].
 }
 \references{
 \itemize{
-   \item [1] \url{http://openbabel.org/wiki/Tutorial:Fingerprints}
-   \item [2] \url{http://merian.pch.univie.ac.at/~nhaider/cheminf/fgtable.pdf}
-   \item [3] \url{http://smartsview.zbh.uni-hamburg.de/}
+  \item [1] \url{http://openbabel.org/wiki/Tutorial:Fingerprints}
+  \item [2] \url{http://merian.pch.univie.ac.at/~nhaider/cheminf/fgtable.pdf}
+  \item [3] \url{http://smartsview.zbh.uni-hamburg.de/}
 }
 }
 \keyword{datasets}

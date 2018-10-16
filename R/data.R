@@ -74,10 +74,22 @@
 #'
 #' @references
 #' \itemize{
-#'    \item [1] \url{http://openbabel.org/wiki/Tutorial:Fingerprints}
-#'    \item [2] \url{http://merian.pch.univie.ac.at/~nhaider/cheminf/fgtable.pdf}
-#'    \item [3] \url{http://smartsview.zbh.uni-hamburg.de/}
+#'   \item [1] \url{http://openbabel.org/wiki/Tutorial:Fingerprints}
+#'   \item [2] \url{http://merian.pch.univie.ac.at/~nhaider/cheminf/fgtable.pdf}
+#'   \item [3] \url{http://smartsview.zbh.uni-hamburg.de/}
 #' }
 #'
 #' @format list of strings, SMARTS pattern
 "fp3_obabel_pattern"
+
+#' OpenBabel logp SMARTS pattern
+#'
+#' List of atom type SMARTS classification patterns extracted from [1].
+#'
+#' @references
+#' \itemize{
+#'   \item [1] \url{https://doi.org/10.1021/ci990307l}
+#' }
+#'
+#' @format list of strings, SMARTS pattern
+"logp_obabel_pattern"
