@@ -239,7 +239,7 @@ test_that("is_correct", {
     mask <- get_fingerprint_mask (fps,
                                   remove_redundant = FALSE,
                                   remove_single_value = FALSE)
-    expect_equal(mask, c(T, T, T, T))
+    expect_equal(mask, c(F, T, F, T))
 
     fps <- matrix (c(
         T, T, T, T,
@@ -345,23 +345,23 @@ test_that ("wrong_input_is_handled", {
 
 test_that ("low_variance_removal_is_correct", {
     fps <- matrix (c(
-        T, F, F, T,
-        F, T, T, T,
-        F, T, T, F,
-        F, F, T, F
+        T, F, F, T, T,
+        F, T, T, T, T,
+        F, T, T, F, F,
+        F, F, T, F, F
     ), nrow = 4, byrow = TRUE)
 
     mask <- get_fingerprint_mask (fps, low_variance_tshd = 0.75,
                                   remove_single_value = FALSE, remove_redundant = FALSE)
-    expect_equal(mask, c(F, T, F, T))
+    expect_equal(mask, c(F, T, F, T, T))
 
     mask <- get_fingerprint_mask (fps, low_variance_tshd = 0.5,
                                   remove_single_value = FALSE, remove_redundant = FALSE)
-    expect_equal(mask, c(F, F, F, F))
+    expect_equal(mask, c(F, F, F, F, F))
 
     mask <- get_fingerprint_mask (fps, low_variance_tshd = 0.90,
                                   remove_single_value = FALSE, remove_redundant = FALSE)
-    expect_equal(mask, c(T, T, T, T))
+    expect_equal(mask, c(T, T, T, T, T))
 })
 
 context ("Create set-difference fingerprints")

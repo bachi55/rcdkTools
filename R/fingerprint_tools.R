@@ -513,11 +513,11 @@ get_fingerprint_mask <- function (
     # Find columns with low variance of the fingerprints.
     if (remove_low_variance) {
         is_low_variance <- apply(fps, MARGIN = 2, FUN = function(x) {
-            any(c(sum(x == 1), sum(x == 0)) / n_fps >= low_variance_tshd)
+            any(c(sum(x == 1), sum(x == 0)) / n_samples >= low_variance_tshd)
         })
     } else {
         is_low_variance <- rep(FALSE, n_fps)
-    }
+        n_samples}
 
     # Find all the redundant fingerprints:
     #   fp_i = 0 <=> fp_j = 0
