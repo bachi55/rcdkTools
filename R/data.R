@@ -8,6 +8,16 @@
 #' @format list of strings, SMARTS pattern
 "count_maccs_pattern"
 
+#' MACCS SMARTS pattern that represent binary properties.
+#'
+#' List of SMARTS pattern extracted from the MACCS fingerprint definition that
+#' are binary by nature. Those patterns can be calculated using 'substructure'
+#' fingerprints with specified \code{substructure.pattern}. Please check
+#' \code{\link[rcdk]{get.fingerprint}} for further details.
+#'
+#' @format list of strings, SMARTS pattern
+"binary_maccs_pattern"
+
 #' OpenBabel FP3 SMARTS pattern
 #'
 #' List of SMARTS pattern provided by OpenBabel [1]. The pattern capture
@@ -76,7 +86,7 @@
 #' \itemize{
 #'   \item [1] \url{http://openbabel.org/wiki/Tutorial:Fingerprints}
 #'   \item [2] \url{http://merian.pch.univie.ac.at/~nhaider/cheminf/fgtable.pdf}
-#'   \item [3] \url{http://smartsview.zbh.uni-hamburg.de/}
+#'   \item [3] \url{https://smarts.plus/}
 #' }
 #'
 #' @format list of strings, SMARTS pattern
