@@ -106,7 +106,7 @@ calculate_fingerprints_from_smiles <- function(
 
             # kr is a subclass of substructure and CDK tests do not contain any
             # typing, etc.
-        } else if (fp_type == "estate") {
+        } else if (fp_type %in% c("estate", "obabel_logp")) {
             rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
             # rJava::.jcall(smiles.parsed[[idx]], "V", "addImplicitHydrogens", smiles.parsed[[idx]])
@@ -155,6 +155,9 @@ calculate_fingerprints_from_smiles <- function(
                     # do anyway not accept any other parameters.
                     rcdk::get.fingerprint(x, type = "substructure", fp.mode = fp_mode,
                                           substructure.pattern = count_maccs_pattern)
+                } else if ((fp_type == "obabel_logp")) {
+                    rcdk::get.fingerprint(x, type = "substructure", fp.mode = fp_mode,
+                                          substructure.pattern = logp_obabel_pattern)
                 } else {
                     rcdk::get.fingerprint(x, type = fp_type, fp.mode = fp_mode, ...)
                 }

@@ -1,7 +1,7 @@
 Package: rcdkTools
 Type: Package
 Title: rcdkTools
-Version: 0.2.1
+Version: 0.2.2
 Author: person("Eric", "Bach", email = "eric.bach@aalto.fi", 
     role = c("aut", "cre"))
 Maintainer: Eric Bach <eric.bach@aalto.fi>
