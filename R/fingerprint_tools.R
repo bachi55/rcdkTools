@@ -90,18 +90,24 @@ calculate_fingerprints_from_smiles <- function(
 
         if (fp_type == "maccs") {
             # covers also "maccs counting" fingerprints.
+            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
-            rcdk::do.isotopes    (smiles.parsed[[idx]]) # ??
+            rcdk::do.isotopes    (smiles.parsed[[idx]]) #?
         } else if (fp_type == "pubchem") {
+            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
             rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
-        } else if (fp_type %in% c("circular", "kr", "circular", "signature", "lingo")) {
+        } else if (fp_type %in% c("circular", "signature", "lingo")) {
             # no further configuration needed
-        } else if (fp_type == "substructure") {
+        } else if (fp_type %in% c("substructure", "kr")) {
             # Unfortunately, we need do not know here, whether the user has
             # provided here some substructures that would require some kind of
             # modifications.
+
+            # kr is a subclass of substructure and CDK tests do not contain any
+            # typing, etc.
         } else if (fp_type == "estate") {
+            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
             # rJava::.jcall(smiles.parsed[[idx]], "V", "addImplicitHydrogens", smiles.parsed[[idx]])
         } else if (fp_type %in% c("standard", "extended", "graph", "hybridization")) {
@@ -109,6 +115,7 @@ calculate_fingerprints_from_smiles <- function(
             rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
             # aromaticity detection is done in the fingerprint class (CDK)
         } else if (fp_type == "shortestpath") {
+            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
             # aromaticity detection is done in the fingerprint class (CDK)
         } else {
@@ -214,11 +221,12 @@ write_fingerprint_to_json_file <- function (fps, path, exclude_zero_fp = FALSE,
 #' @param fps list of \code{\link[fingerprint]{fingerprint}} objects
 #'   (1 x n_samples)
 #' @param path string, path to the output file
+#' @param ... parameters past to \code{\link{fingerprints_to_matrix}}
 #'
 #' @export
-write_fingerprint_to_csv_file <- function (fps, path) {
+write_fingerprint_to_csv_file <- function (fps, path, ...) {
     if (class(fps) != "matrix") {
-        fps_matrix <- fingerprints_to_matrix(fps)
+        fps_matrix <- fingerprints_to_matrix(fps, ...)
     } else {
         fps_matrix <- fps
     }
@@ -548,9 +556,6 @@ get_fingerprint_mask <- function (
 
     return (! (is_single_value | is_low_variance | is_redundant))
 }
-
-
-
 
 #' Calculate mask to exclude molecular counting fingerpints
 #'

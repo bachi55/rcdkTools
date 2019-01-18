@@ -4,13 +4,15 @@
 \alias{write_fingerprint_to_csv_file}
 \title{Convert fingerprint list into a matrix and write it to a csv-file.}
 \usage{
-write_fingerprint_to_csv_file(fps, path)
+write_fingerprint_to_csv_file(fps, path, ...)
 }
 \arguments{
 \item{fps}{list of \code{\link[fingerprint]{fingerprint}} objects
 (1 x n_samples)}
 
 \item{path}{string, path to the output file}
+
+\item{...}{parameters past to \code{\link{fingerprints_to_matrix}}}
 }
 \description{
 List of \code{\link[fingerprint]{fingerprint}} objects is converted to a
