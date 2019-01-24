@@ -90,11 +90,9 @@ calculate_fingerprints_from_smiles <- function(
 
         if (fp_type == "maccs") {
             # covers also "maccs counting" fingerprints.
-            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
             rcdk::do.isotopes    (smiles.parsed[[idx]]) #?
         } else if (fp_type == "pubchem") {
-            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
             rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
         } else if (fp_type %in% c("circular", "signature", "lingo")) {
@@ -107,7 +105,6 @@ calculate_fingerprints_from_smiles <- function(
             # kr is a subclass of substructure and CDK tests do not contain any
             # typing, etc.
         } else if (fp_type %in% c("estate", "obabel_logp")) {
-            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::do.aromaticity (smiles.parsed[[idx]])
             # rJava::.jcall(smiles.parsed[[idx]], "V", "addImplicitHydrogens", smiles.parsed[[idx]])
         } else if (fp_type %in% c("standard", "extended", "graph", "hybridization")) {
@@ -115,7 +112,6 @@ calculate_fingerprints_from_smiles <- function(
             rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
             # aromaticity detection is done in the fingerprint class (CDK)
         } else if (fp_type == "shortestpath") {
-            rcdk::do.typing      (smiles.parsed[[idx]])
             rcdk::convert.implicit.to.explicit (smiles.parsed[[idx]])
             # aromaticity detection is done in the fingerprint class (CDK)
         } else {
@@ -161,7 +157,6 @@ calculate_fingerprints_from_smiles <- function(
                 } else {
                     rcdk::get.fingerprint(x, type = fp_type, fp.mode = fp_mode, ...)
                 }
-
             }
         })
 
