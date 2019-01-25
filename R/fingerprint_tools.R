@@ -157,7 +157,8 @@ calculate_fingerprints_from_smiles <- function(
                 } else if ((fp_type == "estate") & (fp_mode == "count")) {
                     # We can get the estate counting fingerprints by using the
                     # KierHallSmartsDescriptor.
-                    desc <- rcdk::eval.desc(x, rcdk::get.desc.names()[24])
+                    kierhalldesc <- "org.openscience.cdk.qsar.descriptors.molecular.KierHallSmartsDescriptor"
+                    desc <- rcdk::eval.desc(x, kierhalldesc)
                     hvals <- names(desc)
                     cvals <- as.numeric(desc[1,])
                     features <- lapply(1:length(hvals), function(i) {
