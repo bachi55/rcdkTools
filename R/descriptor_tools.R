@@ -107,6 +107,12 @@ calculate_descriptor_from_smiles <- function(
                 setTxtProgressBar(pb, which(sapply (smiles.parsed, '==', x)))
             }
 
+            # if (desc_meta$clone_atom_container) {
+            #     x_copy = rJava::.jcall(
+            #         x, "Lorg/openscience/cdk/interfaces/IAtomContainer;", "clone")
+            # } else {
+            #     x_copy = x
+            # }
 
             loc_desc_vals <- rcdk::eval.desc(x, desc_name,
                                              desc.params = desc_meta$desc_params)
@@ -123,7 +129,7 @@ calculate_descriptor_from_smiles <- function(
     }
 
     return (list(desc_vals=desc_vals, d_type=desc_meta$d_type,
-                 desc_params=desc_params))
+                 desc_params=desc_meta$desc_params))
 }
 
 #' Metadata for CDK descriptors
