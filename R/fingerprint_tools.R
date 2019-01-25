@@ -154,6 +154,16 @@ calculate_fingerprints_from_smiles <- function(
                 } else if ((fp_type == "obabel_logp")) {
                     rcdk::get.fingerprint(x, type = "substructure", fp.mode = fp_mode,
                                           substructure.pattern = logp_obabel_pattern)
+                } else if ((fp_type == "estate") & (fp_mode == "count")) {
+                    # We can get the estate counting fingerprints by using the
+                    # KierHallSmartsDescriptor.
+                    desc <- rcdk::eval.desc(x, rcdk::get.desc.names()[24])
+                    hvals <- names(desc)
+                    cvals <- as.numeric(desc[1,])
+                    features <- lapply(1:length(hvals), function(i) {
+                        new("feature", feature=as.character(hvals[i]), count=as.integer(cvals[i]))
+                    })
+                    new("featvec", features=features, provider="CDK", name="")
                 } else {
                     rcdk::get.fingerprint(x, type = fp_type, fp.mode = fp_mode, ...)
                 }

@@ -680,3 +680,27 @@ test_that ("MACCS_counting_fps_are_calculated", {
     expect_equal(length(fp[[1]]@features), length(count_maccs_pattern))
     expect_equal(fingerprint::count(fp[[1]]@features[[112]]), 1)
 })
+
+context ("Estate counting fingerprints")
+test_that ("Estate_countings_fps_are_correctly_calculated_using_descriptors", {
+    smi <- c("C=C(CCC1CC1C(C)C(C)C)C(C)CC2CCCC2",
+             "C=CC1=C(C)C(=O)N=C1C=c1[nH]c(=Cc2[nH]c(CC3N=C(O)C(C=C)=C3C)c(C)c2CCC(=O)O)c(CCC(=O)O)c1C")
+    mols <- rcdk::parse.smiles(smi)
+
+    # Calculate using descriptors
+    desc <- rcdk::eval.desc(mols, rcdk::get.desc.names()[24])
+
+    # Calculate using "fingerprints"
+    fps <- calculate_fingerprints_from_smiles(smi, fp_type = "estate",
+                                              fp_mode = "count")
+    fps_matrix <- fingerprints_to_matrix(fps)
+
+    expect_equal(ncol(fps_matrix), ncol(desc))
+    expect_equal(nrow(fps_matrix), nrow(desc))
+
+    for (row in 1:nrow(fps_matrix)) {
+        for (idx in 1:ncol(fps_matrix)) {
+            expect_true(fps_matrix[row, idx] == desc[row, idx])
+        }
+    }
+})
