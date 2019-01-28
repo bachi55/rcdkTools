@@ -591,6 +591,7 @@ get_count_fingerprint_mask <- function (
     low_abundance_thsd = 0.25)
 {
     n_fps <- ncol(count_fps)
+    n_samples <- nrow(count_fps)
 
     if (remove_single_value) {
         is_single_value <- apply (count_fps, MARGIN = 2,
@@ -602,7 +603,7 @@ get_count_fingerprint_mask <- function (
     # Find columns with low variance of the fingerprints.
     if (remove_low_abundant) {
         is_low_abundant <- apply(count_fps, MARGIN = 2, FUN = function(x) {
-            (sum(x != 0) / n_fps) < low_abundance_thsd
+            (sum(x != 0) / n_samples) < low_abundance_thsd
         })
     } else {
         is_low_abundant <- rep(FALSE, n_fps)
