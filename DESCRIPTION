@@ -5,7 +5,11 @@ Version: 0.3.1
 Author: person("Eric", "Bach", email = "eric.bach@aalto.fi", 
     role = c("aut", "cre"))
 Maintainer: Eric Bach <eric.bach@aalto.fi>
-Description: Set of tools and helper functions usefull when using the rcdk package.
+Description: Set of wrappers around rcdk-package functions. For examples, this
+    package performs atom configuration specific for each molecular fingerprint
+    prior their calculation. Same holds for molecular descriptors. It also 
+    provides functionality to store fingerprints and descriptors into a matrix,
+    cvs-file respectively as json-file.
 License: MIT
 Encoding: UTF-8
 LazyData: true
@@ -13,7 +17,7 @@ Imports:
     data.table,
     fingerprint,
     igraph,
-    rcdk,
+    rcdk (>= 3.4.9.2),
     tictoc,
     jsonlite
 Suggests:
