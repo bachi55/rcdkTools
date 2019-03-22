@@ -5,8 +5,9 @@
 #'
 #' @param inchi list of strings (1 x n_samples)
 #' @param desc_name string, name of the descriptor to calculate
-#' @param calc_3D_desc boolean, indicating whether descriptors that require
-#'     3D coordinates should be calculated.
+#' @param skip_3D_desc boolean, indicating whether descriptors that require
+#'     3D coordinates should be skipped. Return value of the function will be
+#'     \code{NULL} in this case.
 #' @param verbose boolean, should the function be verbose
 #' @return named list
 #' \itemize{
@@ -18,10 +19,10 @@
 #'
 #' @export
 calculate_descriptor_from_inchi <- function(
-    smiles, desc_name, calc_3D_desc=FALSE, verbose=FALSE)
+    smiles, desc_name, skip_3D_desc=FALSE, verbose=FALSE)
 {
     smiles <- inchi2smiles(inchi)
-    descs <- calculate_descriptor_from_smiles(smiles, desc_name, calc_3D_desc, verbose)
+    descs <- calculate_descriptor_from_smiles(smiles, desc_name, skip_3D_desc, verbose)
 
     stopifnot(names(descs) == smiles)
     names(descs) <- inchi
@@ -36,8 +37,9 @@ calculate_descriptor_from_inchi <- function(
 #'
 #' @param smiles list of strings (1 x n_samples)
 #' @param desc_name string, name of the descriptor to calculate
-#' @param calc_3D_desc boolean, indicating whether descriptors that require
-#'     3D coordinates should be calculated.
+#' @param skip_3D_desc boolean, indicating whether descriptors that require
+#'     3D coordinates should be skipped. Return value of the function will be
+#'     \code{NULL} in this case.
 #' @param verbose boolean, should the function be verbose
 #' @return named list
 #' \itemize{
@@ -47,7 +49,7 @@ calculate_descriptor_from_inchi <- function(
 #' }
 #' @export
 calculate_descriptor_from_smiles <- function(
-    smiles, desc_name, calc_3D_desc=FALSE, verbose=FALSE)
+    smiles, desc_name, skip_3D_desc=TRUE, verbose=FALSE)
 {
     # Parse all smiles and perform configuration
     tictoc::tic("Parsing and configuration")
@@ -64,8 +66,9 @@ calculate_descriptor_from_smiles <- function(
 
     # Get meta data for the requested descriptor
     desc_meta <- get_descriptor_meta_data(desc_name)
-    if ((! calc_3D_desc) & (desc_meta$is_3D)) {
-        stop("3D descriptors should not be caculated.")
+    if (skip_3D_desc & desc_meta$is_3D) {
+        warning("3D descriptors will be skipped.")
+        return(NULL)
     }
 
     for (idx in 1:n_mol) {
@@ -129,7 +132,7 @@ calculate_descriptor_from_smiles <- function(
     }
 
     return (list(desc_vals=desc_vals, d_type=desc_meta$d_type,
-                 desc_params=desc_meta$desc_params))
+                 desc_params=desc_meta$desc_params, d_length=desc_meta$d_length))
 }
 
 #' Metadata for CDK descriptors
@@ -397,4 +400,38 @@ get_descriptor_meta_data <- function(desc_name) {
     }
 
     return(meta_data)
+}
+
+#' Construct a descriptor matrix from \code{calculate_descriptor_from_*} function
+#'
+#' Given a list of descriptor values, i.e., the values of a _single_ descriptor
+#' for a _set_ of molecules, this function will return a matrix object containing
+#' all values.
+#'
+#' @param desc Output of \code{calculate_descriptor_from_*} functions, i.e. the
+#'    descriptor values for a set of (n_samples, ) molecules.
+#'
+#' @return fingerprint matrix (n_samples x n_desc_vals)
+#'
+#' @export
+descriptors_to_matrix <- function (desc)
+{
+    # Number of molecules: n_samples
+    n_samples <- length(desc$desc_vals)
+
+    # Number of values associated with the descriptor: n_desc_vals
+    n_desc_vals <- desc$d_length
+
+    # Create output matrix
+    desc_matrix <- matrix(nrow=n_samples, ncol=n_desc_vals)
+    rownames(desc_matrix) <- names(desc$desc_vals)
+
+    for(i_sample in seq(along=desc$desc_vals)) {
+        if(is.null(desc$desc_vals[[i_sample]])) {
+            next
+        }
+        desc_matrix[i_sample, ] <- desc$desc_vals[[i_sample]]
+    }
+
+    return (desc_matrix)
 }

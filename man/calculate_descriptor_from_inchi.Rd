@@ -4,14 +4,15 @@
 \alias{calculate_descriptor_from_inchi}
 \title{Calculate molecular descriptors from InChI}
 \usage{
-calculate_descriptor_from_inchi(smiles, desc_name, calc_3D_desc = FALSE,
+calculate_descriptor_from_inchi(smiles, desc_name, skip_3D_desc = FALSE,
   verbose = FALSE)
 }
 \arguments{
 \item{desc_name}{string, name of the descriptor to calculate}
 
-\item{calc_3D_desc}{boolean, indicating whether descriptors that require
-3D coordinates should be calculated.}
+\item{skip_3D_desc}{boolean, indicating whether descriptors that require
+3D coordinates should be skipped. Return value of the function will be
+\code{NULL} in this case.}
 
 \item{verbose}{boolean, should the function be verbose}
 
