@@ -209,7 +209,7 @@ get_descriptor_meta_data <- function(desc_name) {
         # scalar float
         meta_data$d_type <- "float"
         meta_data$d_length <- 1
-        meta_data$conf_func <- rcdk::do.typing
+        meta_data$conf_func <- c(rcdk::do.typing)
     } else if (desc_name == "org.openscience.cdk.qsar.descriptors.molecular.TPSADescriptor") {
         # scalar float
         meta_data$d_type <- "float"
