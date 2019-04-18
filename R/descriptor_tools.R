@@ -295,8 +295,8 @@ get_descriptor_meta_data <- function(desc_name) {
         meta_data$d_type <- "float"
         meta_data$d_length <- 9
     } else if (desc_name == "org.openscience.cdk.qsar.descriptors.molecular.FragmentComplexityDescriptor") {
-        # scalar count
-        meta_data$d_type <- "int"
+        # scalar float
+        meta_data$d_type <- "float"
         meta_data$d_length <- 1
     } else if (desc_name == "org.openscience.cdk.qsar.descriptors.molecular.FMFDescriptor") {
         # scalar float
